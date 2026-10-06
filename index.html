@@ -133,7 +133,7 @@ function confetti(){if(matchMedia('(prefers-reduced-motion:reduce)').matches)ret
 function makeQR(text){try{const q=qrcode(0,'M');q.addData(text);q.make();return q}catch{return null}}
 function qrSvg(q){const n=q.getModuleCount(),m=2;let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;const s=n+2*m;return `<svg viewBox="0 0 ${s} ${s}" shape-rendering="crispEdges" role="img" aria-label="QR Code"><rect width="${s}" height="${s}" fill="#faf7ef"/><path d="${d}" fill="#17233d"/></svg>`}
 function qrPng(q,name){const n=q.getModuleCount(),m=2,z=Math.ceil(1000/(n+2*m)),s=(n+2*m)*z,c=document.createElement('canvas');c.width=c.height=s;const x=c.getContext('2d');x.fillStyle='#faf7ef';x.fillRect(0,0,s,s);x.fillStyle='#17233d';for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect((k+m)*z,(r+m)*z,z,z);const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download=`flobag-${(name||'qr').toLowerCase().replace(/\W+/g,'-')}.png`;document.body.appendChild(a);a.click();a.remove()}
-const head=(right='')=>`<header class="top"><a class="logo" href="#/"><img src="logo.jpg" alt="FlôBag" class="logo-img"><span>FlôBag<small>JA Pernambuco</small></span></a>${right}</header>`;
+const head=(right='')=>`<header class="top"><a class="logo" href="#/"><img src="logo.jpeg" alt="FlôBag" class="logo-img"><span>FlôBag<small>JA Pernambuco</small></span></a>${right}</header>`;
 
 function ready(p){const it=[['sua cidade',p.city],['mensagem para quem ajudar',p.msg],['grupo de corrida',p.group],['informações de saúde',p.showMed&&(p.allergies||p.blood||p.convenio||p.meds)],['nome e telefone do contato',p.cName&&p.cPhone],['seu nome',p.name]],miss=it.filter(x=>!x[1]).map(x=>x[0]),pc=Math.round((it.length-miss.length)/it.length*100);
  return `<div class="ready"><div class="ready-top"><b>Perfil ${pc}% pronto</b><span>${miss.length?'Falta: '+esc(miss.slice(0,2).join(', ')):'Tudo certo. Bom treino!'}</span></div><div class="bar"><i style="width:${pc}%"></i></div></div>`}
@@ -167,7 +167,7 @@ function homeView(){
     <h1 style="font-size:clamp(34px,7vw,52px);margin:10px 0 22px">FlôBag<br><span style="color:var(--pri)">corre com segurança.</span></h1>
 
     <div class="card empty">
-      <img src="logo.jpg" alt="FlôBag" style="width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 18px;display:block;border:3px solid var(--pri);box-shadow:5px 5px 0 var(--acc)">
+      <img src="logo.jpeg" alt="FlôBag" style="width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 18px;display:block;border:3px solid var(--pri);box-shadow:5px 5px 0 var(--acc)">
       <h2 style="font-size:24px;margin-bottom:8px">Como funciona</h2>
       <p style="color:var(--mut);margin:0;font-size:14.5px">Sua FlôBag tem um QR Code único. Escaneie o QR da sua pouch, ative e preencha seus dados de emergência. Quem escanear depois vê suas informações e pode ligar para seu contato.</p>
     </div>
@@ -216,7 +216,7 @@ function unclaimedView(p){
   app.innerHTML=`<div class="wrap" style="max-width:560px">
     ${head('<span class="tag new">Não ativada</span>')}
     <div class="card" style="text-align:center;padding:36px 26px;margin-top:8px">
-      <img src="logo.jpg" alt="FlôBag" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin:0 auto 18px;display:block;border:3px solid var(--pri);box-shadow:5px 5px 0 var(--acc)">
+      <img src="logo.jpeg" alt="FlôBag" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin:0 auto 18px;display:block;border:3px solid var(--pri);box-shadow:5px 5px 0 var(--acc)">
       <div class="mono" style="color:var(--pri)">Código ${esc(p.public_id)}</div>
       <h1 style="font-size:clamp(28px,6vw,38px);margin:12px 0 12px">Sua FlôBag<br>ainda não foi ativada.</h1>
       <p style="color:var(--mut);margin:0 0 26px;font-size:14.5px">Ative agora e preencha seus dados de emergência. Quem escanear o QR depois vai ver essas informações e poderá ligar ou mandar mensagem para seu contato.</p>
