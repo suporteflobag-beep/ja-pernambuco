@@ -20,8 +20,9 @@ a{color:inherit;text-decoration:none}
 .wrap{max-width:960px;margin:0 auto;padding:20px 18px 48px}
 header.top{display:flex;align-items:center;justify-content:space-between;padding:6px 0 22px;gap:12px;flex-wrap:wrap}
 .logo{display:flex;align-items:center;gap:10px;font:800 17px Syne,sans-serif}
-.logo i{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:var(--pri);color:#fff;box-shadow:3px 3px 0 var(--acc);font-style:normal;font-size:18px}
-.logo small{display:block;font:500 9px 'DM Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--pri)}
+.logo-img{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;background:#fdfaf3;box-shadow:3px 3px 0 var(--acc);border:2px solid var(--pri)}
+.logo span{display:flex;flex-direction:column}
+.logo small{font:500 9px 'DM Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:var(--pri);margin-top:2px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:22px;padding:22px}
 .hero{background:var(--sec);color:var(--secfg);border-radius:24px;padding:26px;position:relative;overflow:hidden}
 .hero:before{content:"";position:absolute;right:-60px;top:-70px;width:180px;height:180px;border-radius:50%;border:20px solid rgba(249,200,35,.17)}
@@ -112,12 +113,13 @@ const publicLink=pid=>location.href.split('#')[0]+'#/e/'+pid;
 const fromDb=r=>({
   id:r.id,public_id:r.public_id,
   label:r.label,name:r.name,nickname:r.nickname,city:r.city,group:r.group,initials:r.initials,
-  cName:r.c_name,cPhone:r.c_phone,allergies:r.allergies,blood:r.blood,meds:r.meds,msg:r.msg,showMed:r.show_med
+  cName:r.c_name,cPhone:r.c_phone,allergies:r.allergies,blood:r.blood,
+  convenio:r.convenio,meds:r.meds,msg:r.msg,showMed:r.show_med
 });
 const fromPublic=r=>({
   public_id:r.public_id,name:r.name,nickname:r.nickname,city:r.city,group:r.group,initials:r.initials,
-  cName:r.c_name,cPhone:r.c_phone,allergies:r.allergies,blood:r.blood,meds:r.meds,msg:r.msg,
-  showMed:r.show_med,claimed:r.claimed
+  cName:r.c_name,cPhone:r.c_phone,allergies:r.allergies,blood:r.blood,
+  convenio:r.convenio,meds:r.meds,msg:r.msg,showMed:r.show_med,claimed:r.claimed
 });
 
 /* ===================== UI UTILS ===================== */
@@ -131,9 +133,9 @@ function confetti(){if(matchMedia('(prefers-reduced-motion:reduce)').matches)ret
 function makeQR(text){try{const q=qrcode(0,'M');q.addData(text);q.make();return q}catch{return null}}
 function qrSvg(q){const n=q.getModuleCount(),m=2;let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;const s=n+2*m;return `<svg viewBox="0 0 ${s} ${s}" shape-rendering="crispEdges" role="img" aria-label="QR Code"><rect width="${s}" height="${s}" fill="#faf7ef"/><path d="${d}" fill="#17233d"/></svg>`}
 function qrPng(q,name){const n=q.getModuleCount(),m=2,z=Math.ceil(1000/(n+2*m)),s=(n+2*m)*z,c=document.createElement('canvas');c.width=c.height=s;const x=c.getContext('2d');x.fillStyle='#faf7ef';x.fillRect(0,0,s,s);x.fillStyle='#17233d';for(let r=0;r<n;r++)for(let k=0;k<n;k++)if(q.isDark(r,k))x.fillRect((k+m)*z,(r+m)*z,z,z);const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download=`flobag-${(name||'qr').toLowerCase().replace(/\W+/g,'-')}.png`;document.body.appendChild(a);a.click();a.remove()}
-const head=(right='')=>`<header class="top"><a class="logo" href="#/"><i>⚡</i><span>FlôBag<small>JA Pernambuco</small></span></a>${right}</header>`;
+const head=(right='')=>`<header class="top"><a class="logo" href="#/"><img src="logo.jpg" alt="FlôBag" class="logo-img"><span>FlôBag<small>JA Pernambuco</small></span></a>${right}</header>`;
 
-function ready(p){const it=[['sua cidade',p.city],['mensagem para quem ajudar',p.msg],['grupo de corrida',p.group],['informações de saúde',p.showMed&&(p.allergies||p.blood||p.meds)],['nome e telefone do contato',p.cName&&p.cPhone],['seu nome',p.name]],miss=it.filter(x=>!x[1]).map(x=>x[0]),pc=Math.round((it.length-miss.length)/it.length*100);
+function ready(p){const it=[['sua cidade',p.city],['mensagem para quem ajudar',p.msg],['grupo de corrida',p.group],['informações de saúde',p.showMed&&(p.allergies||p.blood||p.convenio||p.meds)],['nome e telefone do contato',p.cName&&p.cPhone],['seu nome',p.name]],miss=it.filter(x=>!x[1]).map(x=>x[0]),pc=Math.round((it.length-miss.length)/it.length*100);
  return `<div class="ready"><div class="ready-top"><b>Perfil ${pc}% pronto</b><span>${miss.length?'Falta: '+esc(miss.slice(0,2).join(', ')):'Tudo certo. Bom treino!'}</span></div><div class="bar"><i style="width:${pc}%"></i></div></div>`}
 
 /* ===================== ROUTER ===================== */
@@ -165,7 +167,7 @@ function homeView(){
     <h1 style="font-size:clamp(34px,7vw,52px);margin:10px 0 22px">FlôBag<br><span style="color:var(--pri)">corre com segurança.</span></h1>
 
     <div class="card empty">
-      <div class="av">⚡</div>
+      <img src="logo.jpg" alt="FlôBag" style="width:120px;height:120px;border-radius:50%;object-fit:cover;margin:0 auto 18px;display:block;border:3px solid var(--pri);box-shadow:5px 5px 0 var(--acc)">
       <h2 style="font-size:24px;margin-bottom:8px">Como funciona</h2>
       <p style="color:var(--mut);margin:0;font-size:14.5px">Sua FlôBag tem um QR Code único. Escaneie o QR da sua pouch, ative e preencha seus dados de emergência. Quem escanear depois vê suas informações e pode ligar para seu contato.</p>
     </div>
@@ -214,7 +216,7 @@ function unclaimedView(p){
   app.innerHTML=`<div class="wrap" style="max-width:560px">
     ${head('<span class="tag new">Não ativada</span>')}
     <div class="card" style="text-align:center;padding:36px 26px;margin-top:8px">
-      <div class="av" style="margin:0 auto 18px;width:80px;height:80px;font-size:26px">⚡</div>
+      <img src="logo.jpg" alt="FlôBag" style="width:100px;height:100px;border-radius:50%;object-fit:cover;margin:0 auto 18px;display:block;border:3px solid var(--pri);box-shadow:5px 5px 0 var(--acc)">
       <div class="mono" style="color:var(--pri)">Código ${esc(p.public_id)}</div>
       <h1 style="font-size:clamp(28px,6vw,38px);margin:12px 0 12px">Sua FlôBag<br>ainda não foi ativada.</h1>
       <p style="color:var(--mut);margin:0 0 26px;font-size:14.5px">Ative agora e preencha seus dados de emergência. Quem escanear o QR depois vai ver essas informações e poderá ligar ou mandar mensagem para seu contato.</p>
@@ -233,7 +235,7 @@ function pub(p){
    <div style="margin-top:22px;padding:14px;border-radius:14px;background:rgba(255,255,255,.08)"><div class="mono" style="color:var(--acc)">Mensagem</div><p style="margin:8px 0 0">${esc(p.msg||'Por favor, entre em contato com a pessoa de confiança abaixo.')}</p></div></div>
    <div style="background:var(--card);color:var(--fg);padding:26px 28px"><div class="mono">Contato de emergência</div><h2 style="font-size:26px;margin:8px 0 4px">${esc(p.cName||'—')}</h2><div class="mono" style="font-size:14px;letter-spacing:.04em">${esc(p.cPhone||'—')}</div>
    <div class="actions"><a class="btn p ring" href="tel:${ph}">📞 Ligar</a><a class="btn" href="sms:${ph}?&body=${sms}">💬 Mensagem</a></div>
-   ${p.showMed&&(p.allergies||p.blood||p.meds)?`<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--bd)"><div class="mono" style="margin-bottom:10px">Informações importantes</div><div class="info">${p.allergies?`<div class="tile"><span class="mono">Alergias</span><b>${esc(p.allergies)}</b></div>`:''}${p.blood?`<div class="tile"><span class="mono">Tipo sanguíneo</span><b>${esc(p.blood)}</b></div>`:''}${p.meds?`<div class="tile"><span class="mono">Medicamentos</span><b>${esc(p.meds)}</b></div>`:''}</div></div>`:''}</div></section>
+   ${p.showMed&&(p.allergies||p.blood||p.convenio||p.meds)?`<div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--bd)"><div class="mono" style="margin-bottom:10px">Informações importantes</div><div class="info">${p.allergies?`<div class="tile"><span class="mono">Alergias</span><b>${esc(p.allergies)}</b></div>`:''}${p.blood?`<div class="tile"><span class="mono">Tipo sanguíneo</span><b>${esc(p.blood)}</b></div>`:''}${p.convenio?`<div class="tile"><span class="mono">Convênio</span><b>${esc(p.convenio)}</b></div>`:''}${p.meds?`<div class="tile"><span class="mono">Medicamentos</span><b>${esc(p.meds)}</b></div>`:''}</div></div>`:''}</div></section>
   <p class="mono" style="text-align:center;margin-top:24px"><a href="#/" style="text-decoration:underline">FlôBag</a> · JA Pernambuco</p></div>`;
 }
 
@@ -380,12 +382,15 @@ async function editView(pid,token){
    <label>Telefone do contato<input name="cPhone" required type="tel" inputmode="tel" maxlength="20" value="${f('cPhone')}" placeholder="(81) 99999-9999"></label>
    <label class="full">Mensagem para quem ajudar<textarea name="msg" rows="3" maxlength="200" placeholder="Ex.: Pode me ligar, sou irmã da Ana.">${f('msg')}</textarea></label></div></section>
   <section class="card"><div class="tog"><div><div class="mono">Informações médicas</div><p style="margin:6px 0 0;color:var(--mut);font-size:13px">Opcionais. Se ativadas, aparecem para quem escanear o QR.</p></div><input type="checkbox" name="showMed" id="sm" ${sm?'checked':''} aria-label="Mostrar informações médicas"></div>
-   <div class="f2" style="margin-top:16px"><label>Alergias<input name="allergies" maxlength="60" value="${f('allergies')}" placeholder="Ex.: alergia a dipirona"></label>
-   <label>Tipo sanguíneo<select name="blood"><option value="">Não informar</option>${['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(t=>`<option ${v.blood===t?'selected':''}>${t}</option>`).join('')}</select></label>
-   <label class="full">Medicamentos contínuos<input name="meds" maxlength="80" value="${f('meds')}" placeholder="Se não usa, escreva 'Nenhum'"></label></div></section>
+   <div class="f2" style="margin-top:16px">
+    <label>Alergias<input name="allergies" maxlength="60" value="${f('allergies')}" placeholder="Ex.: alergia a dipirona"></label>
+    <label>Tipo sanguíneo<select name="blood"><option value="">Não informar</option>${['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(t=>`<option ${v.blood===t?'selected':''}>${t}</option>`).join('')}</select></label>
+    <label>Convênio<input name="convenio" maxlength="60" value="${f('convenio')}" placeholder="Ex.: Unimed, Bradesco Saúde, SUS"></label>
+    <label>Medicamentos contínuos<input name="meds" maxlength="80" value="${f('meds')}" placeholder="Se não usa, escreva 'Nenhum'"></label>
+   </div></section>
   <div class="note" style="margin:0">Quem tiver o QR vê o que você preencher aqui. Compartilhe só o essencial.</div>
   <button class="btn p" style="min-height:52px" type="submit">Salvar alterações →</button></form></div>`;
-  const smEl=$('#sm'),med=()=>['allergies','blood','meds'].forEach(n=>document.querySelector(`[name=${n}]`).disabled=!smEl.checked);med();smEl.onchange=med;
+  const smEl=$('#sm'),med=()=>['allergies','blood','convenio','meds'].forEach(n=>document.querySelector(`[name=${n}]`).disabled=!smEl.checked);med();smEl.onchange=med;
   $('#f').onsubmit=async e=>{
     e.preventDefault();
     const btn=e.target.querySelector('button[type=submit]'),old=btn.textContent;
@@ -401,6 +406,7 @@ async function editView(pid,token){
       cPhone:(d.get('cPhone')||'').toString().trim(),
       allergies:(d.get('allergies')||'').toString().trim()||null,
       blood:(d.get('blood')||'').toString().trim()||null,
+      convenio:(d.get('convenio')||'').toString().trim()||null,
       meds:(d.get('meds')||'').toString().trim()||null,
       msg:(d.get('msg')||'').toString().trim()||null,
       showMed:smEl.checked
@@ -411,7 +417,8 @@ async function editView(pid,token){
       pid,token,
       p_label:o.label,p_name:o.name,p_nickname:o.nickname,p_city:o.city,p_group:o.group,
       p_initials:o.initials,p_c_name:o.cName,p_c_phone:o.cPhone,
-      p_allergies:o.allergies,p_blood:o.blood,p_meds:o.meds,p_msg:o.msg,p_show_med:o.showMed
+      p_allergies:o.allergies,p_blood:o.blood,p_convenio:o.convenio,p_meds:o.meds,
+      p_msg:o.msg,p_show_med:o.showMed
     });
     if(error||!ok){toast('Erro: '+(error?error.message:'falha ao salvar'));btn.disabled=false;btn.textContent=old;return}
     toast('Dados salvos');
